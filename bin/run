@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# classifier — primary operation: run the safety-classifier failure-mode doctor.
+# Entry: src/classifier-doctor.ts (diagnose / verify from observable state) —
+# detects HOLLOW / SKIPPED / STALLED / STALL-RISK / NO-DIRECTIVE task states.
+#
+# Usage:
+#   bin/run                # doctor diagnose (all tasks, human-readable)
+#   bin/run check          # run the bun test suite gate
+#   bin/run verify <id>    # verify a specific repair applied
+#   bin/run [--json] ...   # pass-through to the doctor CLI
+set -euo pipefail
+cd "$(dirname "$0")/.."
+BUN="${BUN:-/home/toxic/.bun/bin/bun}"
+[ -x "$BUN" ] || BUN="bun"
+
+if [ "${1:-}" = "check" ]; then
+  exec ./bin/check
+fi
+
+SRC="src/classifier-doctor.ts"
+[ -f "$SRC" ] || { echo "FAIL: $SRC missing"; exit 1; }
+# default command = diagnose; pass any explicit command through
+if [ $# -eq 0 ]; then
+  exec "$BUN" run "$SRC" diagnose
+fi
+exec "$BUN" run "$SRC" "$@"

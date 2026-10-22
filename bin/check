@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# classifier — self-test gate (PASS/FAIL).
+# Primary op is the safety-classifier doctor. Gate = the bun test suite
+# (doctor + regressions), which exercises the detectors/triggers as pure
+# functions without needing a live cell workspace. Runs via the repo's own
+# `bun test` so it stays consistent with package.json scripts (not modified here).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "== classifier check: start =="
+BUN="${BUN:-/home/toxic/.bun/bin/bun}"
+[ -x "$BUN" ] || BUN="bun"
+[ -f src/detectors.ts ] || { echo "FAIL: src/detectors.ts missing"; exit 1; }
+
+set +e
+out="$("$BUN" test 2>&1)"
+rc=$?
+set -e
+echo "$out"
+
+[ "$rc" -eq 0 ] || { echo "FAIL: bun test rc=$rc"; exit 1; }
+echo "$out" | grep -qiE '[0-9]+ pass' || { echo "FAIL: no pass marker"; exit 1; }
+
+echo "== classifier check: PASS =="
+exit 0
