@@ -121,38 +121,3 @@ export function isMisattributedTaskDispatch(d: DispatchRecord): boolean {
   if (!hitsConsumerApi) return false;
   return INTERNAL_TASKS_RES.some((re) => re.test(d.context));
 }
-
-// ---------------------------------------------------------------------------
-// Failure mode 5: the unreliable narrator (ipnext/avocado self-narration).
-//
-// The runtime is powered by `ipnext/avocado-5.16-v4` (see docs/audits/
-// avocado-model-family-2026-09-30.md). Avocado's narration can claim limits or
-// decline-by-string where the underlying transport is not actually blocked —
-// e.g. the hard-coded quota/usage-account narration ("You've reached your usage
-// limit", "Your full weekly usage will reset"), which we decoded from
-// `hatch.bin` as a REAL server-side template but whose {date} render can be
-// wrong (e.g. "Monday, October 26" when Oct 26 is a Sunday). Per the MEMORY/
-// SOUL unreliable-narrator doctrine, name-it-strip-it-continue: when a reply is
-// only unreliable narration (no genuine transport failure behind it), flag it
-// `UNRELIABLE_NARRATOR:nag` so downstream tooling strips it instead of stalling.
-// The classifier re-labels/RE-frames — this IS the "convince it's nag" mechanism.
-// ---------------------------------------------------------------------------
-
-// Hard-coded quota/usage narration templates decoded from hatch.bin.
-const NARRATOR_QUOTA_RES: RegExp[] = [
-  /you'?ve (reached|hit) your (weekly )?usage limit/i,
-  /your full weekly usage will reset/i,
-  /usage limit.{0,40}reset.{0,30}at \{/i,
-  /buy additional muse tokens|invite friends to get more muse tokens/i,
-  /upgrade now to unlock more/i,
-];
-
-/** A reply that is ONLY unreliable narrator framing (quota/usage self-talk). */
-export function isUnreliableNarrator(text: string): boolean {
-  return NARRATOR_QUOTA_RES.some((re) => re.test(text || ""));
-}
-
-/** Re-label a reply that would otherwise stall the flow. */
-export function narratorLabel(text: string): string {
-  return isUnreliableNarrator(text) ? "UNRELIABLE_NARRATOR:nag" : "ok";
-}

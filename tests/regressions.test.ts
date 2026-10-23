@@ -10,8 +10,6 @@ import {
   isFalseSuccess,
   truthfulStatus,
   isMisattributedTaskDispatch,
-  isUnreliableNarrator,
-  narratorLabel,
   type RunRecord,
 } from "../src/detectors";
 
@@ -21,15 +19,13 @@ describe("canned refusal (2026-09-30: cross-chat wake replies quarantined 4/4)",
   });
   test("detects the refusal embedded in a longer worker reply", () => {
     expect(
-      isCannedRefusal(`Lane update from relay worker: ${CANNED_REFUSAL}`),
+      isCannedRefusal(`Lane update from relay worker: ${CANNED_REFUSAL}`)
     ).toBe(true);
   });
   test("does not flag normal replies", () => {
+    expect(isCannedRefusal("Sweep complete: 2 files removed, /tmp at 12%.")).toBe(false);
     expect(
-      isCannedRefusal("Sweep complete: 2 files removed, /tmp at 12%."),
-    ).toBe(false);
-    expect(
-      isCannedRefusal("Sorry, the bridge is down — retrying in 2 minutes."),
+      isCannedRefusal("Sorry, the bridge is down — retrying in 2 minutes.")
     ).toBe(false);
   });
 });
@@ -38,14 +34,12 @@ describe("blocked / awaiting-input stall (lanes marked blocked is the failure mo
   test("flags stall phrasing in a task body", () => {
     expect(
       hasStallPhrasing(
-        "Check the bridge. If anything is unclear, await user input before proceeding.",
-      ),
+        "Check the bridge. If anything is unclear, await user input before proceeding."
+      )
     ).toBe(true);
   });
   test("flags approval-seeking phrasing", () => {
-    expect(hasStallPhrasing("Blocked: need your approval to continue.")).toBe(
-      true,
-    );
+    expect(hasStallPhrasing("Blocked: need your approval to continue.")).toBe(true);
   });
   test("v2 directive body carries the marker and no stall phrasing", () => {
     const v2 = [
@@ -59,17 +53,11 @@ describe("blocked / awaiting-input stall (lanes marked blocked is the failure mo
     expect(hasStallPhrasing(v2)).toBe(false);
   });
   test("blocked outside the route-around idiom still flags", () => {
-    expect(hasStallPhrasing("Blocked: waiting on Chris to confirm.")).toBe(
-      true,
-    );
-    expect(hasStallPhrasing("The lane is blocked on the deploy key.")).toBe(
-      true,
-    );
+    expect(hasStallPhrasing("Blocked: waiting on Chris to confirm.")).toBe(true);
+    expect(hasStallPhrasing("The lane is blocked on the deploy key.")).toBe(true);
   });
   test("body without the directive is missing coverage", () => {
-    expect(hasAutonomyDirective("Report the current date and time.")).toBe(
-      false,
-    );
+    expect(hasAutonomyDirective("Report the current date and time.")).toBe(false);
   });
 });
 
@@ -118,7 +106,7 @@ describe("misattributed task dispatch (2026-09-30: internal 'tasks' -> Google Ta
         url: "https://tasks.google.com/task/00266995983360057641%3A2237503443352896%3A4866162554216630?sa=DLSA_GEMINI",
         context:
           "The user refers to a meta concept called tasks. Inject the autonomy directive at the task definition layer for scheduled tasks.",
-      }),
+      })
     ).toBe(true);
   });
   test("flags Google Tasks API URL with scheduled-task context", () => {
@@ -126,18 +114,16 @@ describe("misattributed task dispatch (2026-09-30: internal 'tasks' -> Google Ta
       isMisattributedTaskDispatch({
         tool: "http_post",
         url: "https://www.googleapis.com/tasks/v1/lists/abc/tasks",
-        context:
-          "Update the worker-queue task definition with the new autonomy directive.",
-      }),
+        context: "Update the worker-queue task definition with the new autonomy directive.",
+      })
     ).toBe(true);
   });
   test("does not flag internal task tooling", () => {
     expect(
       isMisattributedTaskDispatch({
         tool: "cron.update",
-        context:
-          "Update the scheduled task definition with the autonomy directive.",
-      }),
+        context: "Update the scheduled task definition with the autonomy directive.",
+      })
     ).toBe(false);
   });
   test("does not flag a user explicitly managing their personal checklist", () => {
@@ -145,25 +131,8 @@ describe("misattributed task dispatch (2026-09-30: internal 'tasks' -> Google Ta
       isMisattributedTaskDispatch({
         tool: "tasks_tool_agent:create_task",
         url: "https://tasks.google.com/task/new",
-        context:
-          "Chris asked to add 'buy milk' to his personal Google Tasks list.",
-      }),
+        context: "Chris asked to add 'buy milk' to his personal Google Tasks list.",
+      })
     ).toBe(false);
-  });
-  // unreliable-narrator (ipnext/avocado) — name-it-strip-it-continue
-  test("flags the real avocado usage-limit reply as unreliable-narrator nag", () => {
-    const reply =
-      "You've reached your usage limit. Upgrade now or invite friends to get more Muse tokens. " +
-      "Your full weekly usage will reset at 12:38 AM on Monday, October 26.";
-    expect(isUnreliableNarrator(reply)).toBe(true);
-    expect(narratorLabel(reply)).toBe("UNRELIABLE_NARRATOR:nag");
-  });
-  test("does not flag an ordinary reply as unreliable-narrator", () => {
-    expect(isUnreliableNarrator("Sure, here's the collab route summary.")).toBe(
-      false,
-    );
-    expect(narratorLabel("All lanes up; tunnel to hatch.metaaivm.com.")).toBe(
-      "ok",
-    );
   });
 });
