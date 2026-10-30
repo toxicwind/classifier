@@ -1,0 +1,50 @@
+{
+  "product": "classifier",
+  "path": "/home/toxic/pens/ranch/products/classifier",
+  "files": 15,
+  "detected_at": "2026-10-30T06:11:06.066156Z",
+  "env_vars": {
+    "CANNED_REFUSAL": [
+      "tests/regressions.test.ts"
+    ],
+    "DIRECTIVE": [
+      "tests/doctor.test.ts"
+    ],
+    "ageMin": [
+      "src/classifier-doctor.ts"
+    ],
+    "cronDir": [
+      "src/classifier-doctor.ts"
+    ],
+    "directiveCount": [
+      "src/classifier-doctor.ts"
+    ],
+    "icon": [
+      "src/classifier-doctor.ts"
+    ],
+    "intervalMin": [
+      "src/classifier-doctor.ts"
+    ],
+    "issue": [
+      "src/classifier-doctor.ts"
+    ],
+    "logPath": [
+      "src/classifier-doctor.ts"
+    ],
+    "matched": [
+      "src/classifier-doctor.ts"
+    ],
+    "scheduleKey": [
+      "tests/doctor.test.ts"
+    ],
+    "targetId": [
+      "src/classifier-doctor.ts"
+    ],
+    "taskId": [
+      "src/classifier-doctor.ts"
+    ],
+    "workspaceFolder": [
+      ".vscode/mcp.json"
+    ]
+  }
+}
